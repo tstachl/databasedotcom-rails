@@ -10,7 +10,7 @@ module Databasedotcom
               username = config["username"]
               password = config["password"]
               @dbdc_client.authenticate(:username => username, :password => password)
-            else if config['authtype'] == 'token'
+            elseif config['authtype'] == 'token'
               token = config['token']
               instance_url = config['instance_url']
               @dbdc_client.authenticate(:token => token, :instance_url => instance_url)
