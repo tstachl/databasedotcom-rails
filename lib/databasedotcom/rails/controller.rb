@@ -4,19 +4,23 @@ module Databasedotcom
       module ClassMethods
         def dbdc_client
           unless @dbdc_client
-            config = YAML.load_file(File.join(::Rails.root, 'config', 'databasedotcom.yml'))
-            config = config.has_key?(::Rails.env) ? config[::Rails.env] : config
+            if FileTest.exists?(File.join(::Rails.root, 'config', 'databasedotcom.yml'))
+              config = YAML.load_file(File.join(::Rails.root, 'config', 'databasedotcom.yml'))
+              config = config.has_key?(::Rails.env) ? config[::Rails.env] : config
+            end
+            config ||= {}
+            
             @dbdc_client = Databasedotcom::Client.new(config)
             if config['authtype'] == 'password'
               username = config["username"]
               password = config["password"]
               @dbdc_client.authenticate(:username => username, :password => password)
-            elseif config['authtype'] == 'token'
+            elsif config['authtype'] == 'token'
               token = config['token']
               instance_url = config['instance_url']
               @dbdc_client.authenticate(:token => token, :instance_url => instance_url)
-            else
-              @dbdc_client.authentication(JSON.parse(ENV[config['authtype']]))
+            elsif ENV.has_key?('DATABASEDOTCOM_USERNAME') and ENV.has_key?('DATABASEDOTCOM_PASSWORD')
+              @dbdc_client.authenticate(:username => ENV['DATABASEDOTCOM_USERNAME'], :password => ENV['DATABASEDOTCOM_PASSWORD'])
             end
           end
 
